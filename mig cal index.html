@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIG 焊机简易估算器</title>
+<style>
+:root{font-family:Arial,"Noto Sans SC",sans-serif;color:#172033;background:#f3f6fa}*{box-sizing:border-box}body{margin:0;padding:20px 14px}main{max-width:520px;margin:0 auto;background:#fff;border-radius:18px;padding:22px;box-shadow:0 8px 28px #1a315015}h1{font-size:24px;margin:0 0 8px}.sub{color:#657086;font-size:14px;line-height:1.5;margin-bottom:22px}label{display:block;font-weight:700;margin:16px 0 8px}input,select{width:100%;font-size:18px;border:1px solid #ccd5e2;border-radius:10px;padding:12px;background:white;color:inherit}.result{background:#edf7f0;border-radius:14px;padding:16px;margin-top:20px}.result small{color:#42604b}.amps{font-size:34px;font-weight:800;color:#176b3a;margin:5px 0}.machine{font-size:20px;font-weight:700}.note{font-size:13px;line-height:1.6;color:#5d6878;margin-top:18px}button{width:100%;border:0;border-radius:10px;padding:13px;margin-top:12px;background:#1d4ed8;color:white;font-size:16px;font-weight:700}footer{text-align:center;color:#8992a1;font-size:12px;margin-top:18px}
+</style></head><body><main>
+<h1>MIG 焊机简易估算器</h1><div class="sub">输入板厚，快速查看粗略电流估算和焊机规格参考。适合手机使用。</div>
+<label for="thickness">钢板厚度（mm）</label><input id="thickness" type="number" min="0.1" step="0.1" value="15" inputmode="decimal">
+<label for="factor">粗略估算系数</label><select id="factor"><option value="15">15 A/mm（较低估算）</option><option value="20" selected>20 A/mm（粗略参考）</option></select>
+<label for="wire">焊丝类型</label><select id="wire"><option>实芯 MIG/MAG 焊丝</option><option selected>气体保护药芯焊丝（Flux Cored）</option><option>自保护药芯焊丝</option></select>
+<label for="use">使用场景</label><select id="use"><option>偶尔使用</option><option>一般工厂使用</option><option selected>长时间连续生产</option></select>
+<section class="result" aria-live="polite"><small>粗略估算电流</small><div class="amps" id="amps">300 A</div><small>初步建议焊机规格</small><div class="machine" id="machine">350 A</div></section>
+<button id="copy">复制计算结果</button>
+<div class="note"><b>重要说明：</b>这是初步销售选型工具，不是通用焊接公式。实际电流和电压应按具体焊丝型号的厂家参数表、焊接位置、坡口和工艺要求确定。长时间生产必须核对焊机在目标电流下的额定负载持续率（Duty Cycle）。</div>
+<footer>简易工具 · 仅供初步估算</footer></main>
+<script>
+const thickness=document.getElementById('thickness'),factor=document.getElementById('factor'),use=document.getElementById('use'),ampsEl=document.getElementById('amps'),machineEl=document.getElementById('machine');
+function update(){const t=Number(thickness.value);if(!Number.isFinite(t)||t<=0){ampsEl.textContent='请输入有效板厚';machineEl.textContent='—';return;}const amps=Math.round(t*Number(factor.value));let machine=amps<=150?200:amps<=200?250:amps<=250?300:amps<=300?350:400;if(use.value==='长时间连续生产'){machine=Math.max(machine,amps<=200?250:amps<=250?300:amps<=300?350:400);}ampsEl.textContent=amps+' A';machineEl.textContent=machine+' A（初步参考）';}
+[thickness,factor,use].forEach(el=>el.addEventListener('input',update));
+document.getElementById('copy').addEventListener('click',async()=>{const text=`钢板厚度：${thickness.value} mm\n粗略估算电流：${ampsEl.textContent}\n建议焊机规格：${machineEl.textContent}\n注意：仅供初步估算，实际参数请按焊丝厂家数据表及焊机负载持续率确认。`;try{await navigator.clipboard.writeText(text);document.getElementById('copy').textContent='已复制';setTimeout(()=>document.getElementById('copy').textContent='复制计算结果',1600);}catch{window.prompt('请复制以下内容：',text);}});
+update();
+</script></body></html>
